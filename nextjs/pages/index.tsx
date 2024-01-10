@@ -83,7 +83,7 @@ const Home: NextPage = () => {
                     <span>Edit the Hook contract as needed:</span>
                     {/* Highlight the file path with a calm blue color to indicate an action point */}
                     <Code color="default" style={{ fontFamily: "var(--font-mono)" }}>
-                      {`contracts/src/Counter.sol`}
+                      {`contracts/src/OrderBook.sol`}
                     </Code>
                     <span>Start your local network</span>
                     {/* Highlight the file path with a calm blue color to indicate an action point */}

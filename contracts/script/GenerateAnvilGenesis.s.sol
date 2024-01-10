@@ -12,7 +12,7 @@ import {PoolInitializeTest} from "@uniswap/v4-core/src/test/PoolInitializeTest.s
 import {PoolModifyLiquidityTest} from "@uniswap/v4-core/src/test/PoolModifyLiquidityTest.sol";
 import {PoolSwapTest} from "@uniswap/v4-core/src/test/PoolSwapTest.sol";
 import {PoolDonateTest} from "@uniswap/v4-core/src/test/PoolDonateTest.sol";
-import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
+import {MockERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
 
 contract GenerateAnvilGenesisScript is Script {

@@ -3,7 +3,7 @@ import { NumericInput } from "../base/numeric-input";
 import { TokenDropdown } from "../base/token-dropdown";
 import { useChainId, useToken } from "wagmi";
 import { FetchTokenResult } from "wagmi/dist/actions";
-import { counterAddress, usePoolInitializeTestInitialize } from "~~/generated/generated";
+import { orderBookAddress, usePoolInitializeTestInitialize } from "~~/generated/generated";
 import { TOKEN_ADDRESSES } from "~~/utils/config";
 import { BLANK_TOKEN } from "~~/utils/constants";
 import { notification } from "~~/utils/scaffold-eth";
@@ -36,7 +36,7 @@ function InitializeComponent() {
 
   const [swapFee, setSwapFee] = useState(3000n);
   const [tickSpacing, setTickSpacing] = useState(60n);
-  const [hookAddress, setHookAddress] = useState<string>(counterAddress[chainId as keyof typeof counterAddress]);
+  const [hookAddress, setHookAddress] = useState<string>(orderBookAddress[chainId as keyof typeof orderBookAddress]);
 
   const [hookData, setHookData] = useState<string>("0x"); // State for custom hook data
   const [price, setPrice] = useState<number>(1); // State for normal price
@@ -105,7 +105,7 @@ function InitializeComponent() {
     }
   };
   useEffect(() => {
-    setHookAddress(counterAddress[chainId as keyof typeof counterAddress]);
+    setHookAddress(orderBookAddress[chainId as keyof typeof orderBookAddress]);
   }, [chainId]);
 
   return (

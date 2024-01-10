@@ -6,7 +6,7 @@ import { TokenDropdown } from "../base/token-dropdown";
 import { parseEther } from "viem";
 import { useAccount, useChainId, useToken, useWaitForTransaction } from "wagmi";
 import {
-  counterAddress,
+  orderBookAddress,
   poolSwapTestAddress,
   useErc20Allowance,
   useErc20Approve,
@@ -32,7 +32,7 @@ function SwapComponent() {
   const [tickSpacing, setTickSpacing] = useState(60n);
   const [hookData, setHookData] = useState<string>(""); // New state for custom hook data
   const [hookAddress, setHookAddress] = useState<`0x${string}`>(
-    counterAddress[chainId as keyof typeof counterAddress] ?? ZERO_ADDR,
+    orderBookAddress[chainId as keyof typeof orderBookAddress] ?? ZERO_ADDR,
   );
 
   //swap status
@@ -104,7 +104,7 @@ function SwapComponent() {
   };
 
   useEffect(() => {
-    setHookAddress(counterAddress[chainId as keyof typeof counterAddress] ?? ZERO_ADDR);
+    setHookAddress(orderBookAddress[chainId as keyof typeof orderBookAddress] ?? ZERO_ADDR);
   }, [chainId]);
 
   // Success message once the transaction has been confirmed on the blockchain

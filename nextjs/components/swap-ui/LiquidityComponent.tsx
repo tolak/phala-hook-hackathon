@@ -5,7 +5,7 @@ import { Tab, Tabs } from "@nextui-org/react";
 import { formatEther, parseEther } from "viem";
 import { useAccount, useChainId } from "wagmi";
 import {
-  counterAddress,
+  orderBookAddress,
   poolModifyLiquidityTestAddress,
   useErc20Allowance,
   useErc20Approve,
@@ -31,7 +31,7 @@ function LiquidityComponent() {
   const [swapFee, setSwapFee] = useState(3000n);
   const [tickSpacing, setTickSpacing] = useState(60n);
   const [hookAddress, setHookAddress] = useState<`0x${string}`>(
-    (counterAddress[chainId as keyof typeof counterAddress] ?? ZERO_ADDR) as `0x${string}`,
+    (orderBookAddress[chainId as keyof typeof orderBookAddress] ?? ZERO_ADDR) as `0x${string}`,
   );
 
   const [tickLower, setTickLower] = useState(-(tickSpacing * 10n));
@@ -216,7 +216,7 @@ function LiquidityComponent() {
   };
 
   useEffect(() => {
-    setHookAddress(counterAddress[chainId as keyof typeof counterAddress] ?? ZERO_ADDR);
+    setHookAddress(orderBookAddress[chainId as keyof typeof orderBookAddress] ?? ZERO_ADDR);
   }, [chainId]);
 
   return (

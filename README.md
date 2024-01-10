@@ -1,179 +1,50 @@
-# scaffold-hook
+# An Off-chain Orderbook for Uniswap Pools
 
-_Develop and test Uniswap v4 Hooks with minimal interfaces for the swap lifecycle (pool creation, liquidity provision, and swapping)_
+## Description
 
-> _inspired by [scaffold-eth](https://github.com/scaffold-eth/scaffold-eth-2)_
+An Uniswap Pre-Swap Hook to provide the Orderbook funtionality for Uniswap pools. MEV protection guaranteed, no more Slipepage, no more trading fee, without necessity to swap inside AMM pool.
 
-## Features
+## Why it Matters
 
-✅ Template hook with deployment commands
+- People are struggling with the slipage, espaecally at poor liquidity pool
+- People got sandwich attack even with a proper slipage tolerance setting
+- Trading fee is expensive especially swap with high quantity
 
-✅ User interfaces for: pool creation, liquidity creation, and swapping
+## Solution
 
-✅ Local network (anvil) with predeployed Uniswap v4
+Instead of swapping though pool directly, each time when traders submit their trading transaction, we will first look up the off-chain orderbook to check if there have counterpart orders. If have, we will swap between order provider and trader's request automatically on pre-swap hook contract, or we fallback to AMM pool.
+- [Hook contract](./contracts/src/OrderBook.sol)
+- [Orderbook Utilities](./scripts/console.js)
 
-✅ Testnet support
+## How it works
 
-✅ Foundry (hardhat support coming later)
+- We define people who trades on Uniswap as Traders, people who submit their order to off-chain orderbook as Order Providers
 
----
+- An off-chain orderbook implemented in Phat Contract, in this Hackathon, we simulate with JavaScript, and an simple orderbook described and maintained manually in a [JSON file](./scripts/orderbook.json)
 
-# Setup
+- Order provider submit their order though Phat contract query, which underlying being saved in phat contract's cache without any delay and fee required.
 
-_requires [foundry](https://book.getfoundry.sh/getting-started/installation) & [node 18+](https://nodejs.org/en/download)_
+- When Trader swap in this pool, we check the orderbook to see if there are orders can match the trading requirement.
+    - If exist, we construct the automatic swap transaction data (e.g. hook data below) and pass it to the pre-swap hook contract, inside the pre-swap hook function, we exchange assets for provider and traders with ERC20 `transferFrom` function, then return NoOp so the uniswap swap operation will be skipped; For example, with the following command, we calculated the hook data that can be specificed when doing swap  on the UI
+    ```sh
+    node scripts/console.js orderbook search --spender 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --spend token0 --amount 100 
 
-## Linux / WSL2 (TSTORE)
+    start building Hookdata...
+    {
+    "token0PermitTarget": "0x2dafbdf11a8cf84c372539a38d781d8248399ae3",
+    "token0PermitCalldata": "0xd505accf000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266000000000000000000000000330ae74daa74d90fac17045ebba5ba7d233f69d90000000000000000000000000000000000000000000000000000000000000064ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000001cfde0d0a5c261c4e3aadc4c384cbd5d8a92cf51eb94cef0403fbf271b1bb57dac17bc057b2931b1b4dfdc8bb16ee86ca59abfc5edc3fec45cc5005eedc3ee4c3b",
+    "token1PermitTarget": "0xa8ceafb1940244f2f022ff8440a42411b4f07fc4",
+    "token1PermitCalldata": "0xd505accf00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8000000000000000000000000330ae74daa74d90fac17045ebba5ba7d233f69d900000000000000000000000000000000000000000000000000000000000003e8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000001b02da4db245b36182ee5e770e34f96e87120cf34ce0db7555c369bd36a3fde889393ab63c41c0a60417109d78493a182778133cb7dd609d7b358110c3ff26beb1",
+    "token0Amount": "100",
+    "token1Amount": 1000,
+    "provider": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+    }
+    🎉 Found matched buying order, following hookdata to swap function:
+    0x0000000000000000000000002dafbdf11a8cf84c372539a38d781d8248399ae300000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000a8ceafb1940244f2f022ff8440a42411b4f07fc40000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000003e800000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c800000000000000000000000000000000000000000000000000000000000000e4d505accf000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266000000000000000000000000330ae74daa74d90fac17045ebba5ba7d233f69d90000000000000000000000000000000000000000000000000000000000000064ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000001cfde0d0a5c261c4e3aadc4c384cbd5d8a92cf51eb94cef0403fbf271b1bb57dac17bc057b2931b1b4dfdc8bb16ee86ca59abfc5edc3fec45cc5005eedc3ee4c3b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4d505accf00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8000000000000000000000000330ae74daa74d90fac17045ebba5ba7d233f69d900000000000000000000000000000000000000000000000000000000000003e8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000001b02da4db245b36182ee5e770e34f96e87120cf34ce0db7555c369bd36a3fde889393ab63c41c0a60417109d78493a182778133cb7dd609d7b358110c3ff26beb100000000000000000000000000000000000000000000000000000000
+    ```
 
-Please update [foundry.toml](foundry.toml#L9) to use the linux `solc`
+    then we pass the hook data to swap function:
 
-Mac users do not need to change anything by default
+    ![swap with off-chain order](./img/swap.png)
 
-## Install Dependencies
-
-```bash
-forge install
-
-cd nextjs/
-npm install
-```
-
-## Define environment variables
-
-```bash
-cp .env.example .env
-```
-
-See [Environment](#environment-variables) additional setup
-
----
-
-## Get Started
-
-1. Start the local network, with v4 contracts predeployed
-
-   ```bash
-   # root of the repository
-   cd scaffold-hook/
-   npm run anvil
-   ```
-
-2. Deploy the template hook
-
-   ```bash
-   # root of the repository
-   cd scaffold-hook/
-   forge build
-   npm run deploy:anvil
-   ```
-
-3. Update [wagmi.config.ts](nextjs/wagmi.config.ts) with the hook address from [run-latest.json](/broadcast/DeployHook.s.sol/31337/run-latest.json)
-
-4. Regenerate react hooks, addresses, and ABIs
-
-   ```bash
-   cd nextjs/
-   npm run wagmi
-   ```
-
-5. Start the webapp
-   ```bash
-   cd nextjs/
-   npm run dev
-   ```
-
-## Hook Configuration
-
-Modifying the file name, contract name, or _hook flags_ will require configuration:
-
-Renaming -- update [.env](.env)
-
-```bash
-# Hook Contract, formatted: <filename.sol>:<contractName>
-HOOK_CONTRACT="Counter.sol:Counter"
-```
-
-Changing hook flags -- update [.env](.env) and ensure `getHookCalls()` is in agreement
-
-```bash
-# in .env
-# Hook Flags
-BEFORE_SWAP=true
-AFTER_SWAP=true
-BEFORE_MODIFY_POSITION=true
-AFTER_MODIFY_POSITION=true
-BEFORE_INITIALIZE=false
-AFTER_INITIALIZE=false
-BEFORE_DONATE=false
-AFTER_DONATE=false
-```
-
-```solidity
-// in Hook Contract
-function getHooksCalls() public pure returns (Hooks.Calls memory) {
-    return Hooks.Calls({
-        beforeInitialize: false,
-        afterInitialize: false,
-        beforeModifyPosition: true,
-        afterModifyPosition: true,
-        beforeSwap: true,
-        afterSwap: true,
-        beforeDonate: false,
-        afterDonate: false
-    });
-}
-```
-
-## Deploying to Testnets
-
-_Ensure your wallet is funded with testnet gas (ETH)_
-
-- `npm run deploy:anvil`
-
-- `npm run deploy:goerli`
-
-- `npm run deploy:arbitrum-goerli`
-
-- `npm run deploy:arbitrum-sepolia`
-
-- `npm run deploy:optimism-goerli`
-
-- `npm run deploy:base-goerli`
-
-- `npm run deploy:sepolia`
-
-- `npm run deploy:scroll-sepolia`
-
-- `npm run deploy:polygon-mumbai`
-
-- `npm run deploy:polygon-zkevm-testnet`
-
-## Additional Configuration
-
-### Custom Tokens
-
-While `scaffold-hook` ships solmate's `MockERC20` on local and testnet, you can provide your own custom tokens:
-
-1. define them in [wagmi.config.ts](nextjs/wagmi.config.ts#L80), and regenerate the codegen: `npm run wagmi`
-2. import the generated addresses and edit [`TOKEN_ADDRESSES`](nextjs/utils/config.ts)
-
-### Debuggable Hook (etherscan-style contract interface)
-
-1. define the hook in [wagmi.config.ts](nextjs/wagmi.config.ts#L15), and regenerate the codegen: `npm run wagmi`
-2. import the generated types and edit [`DEBUGGABLE_ADDRESSES`](nextjs/utils/config.ts)
-
-## Environment Variables
-
-- `ANVIL_FORK_URL`: RPC URL for anvil fork mode
-- `ETHERSCAN_API_KEY`: Your Etherscan API Key
-- `FORGE_PRIVATE_KEY`: The private key of the wallet for testnet deployments
-
-# Learn more
-
-To learn more about [Next.js](https://nextjs.org), [Foundry](https://book.getfoundry.sh/) or [wagmi](https://wagmi.sh), check out the following resources:
-
-- [Foundry Documentation](https://book.getfoundry.sh/) – learn more about the Foundry stack (Anvil, Forge, etc).
-- [wagmi Documentation](https://wagmi.sh) – learn about wagmi Hooks and API.
-- [wagmi Examples](https://wagmi.sh/examples/connect-wallet) – a suite of simple examples using wagmi.
-- [@wagmi/cli Documentation](https://wagmi.sh/cli) – learn more about the wagmi CLI.
-- [Next.js Documentation](https://nextjs.org/docs) learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    - If not exist, we pass empty argument to pre-swap hook function, thus, nothing will happen in the pre-swap hook, which eventually will fallback to the uniswap swap function, traders get their token from on-chain pool.

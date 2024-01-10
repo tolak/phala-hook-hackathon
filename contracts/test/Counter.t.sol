@@ -12,11 +12,12 @@ import {Deployers} from "@uniswap/v4-core/test/utils/Deployers.sol";
 import {BalanceDelta} from "@uniswap/v4-core/src/types/BalanceDelta.sol";
 import {CurrencyLibrary, Currency} from "@uniswap/v4-core/src/types/Currency.sol";
 import {Constants} from "@uniswap/v4-core/test/utils/Constants.sol";
-import {Counter} from "../src/Counter.sol";
+// import {Counter} from "../src/Counter.sol";
 import {HookMiner} from "./utils/HookMiner.sol";
 import {Deployers} from "@uniswap/v4-core/test/utils/Deployers.sol";
 import {PoolSwapTest} from "@uniswap/v4-core/src/test/PoolSwapTest.sol";
 
+/*
 contract CounterTest is Test, Deployers {
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
@@ -96,3 +97,4 @@ contract CounterTest is Test, Deployers {
         swapDelta = swapRouter.swap(key, params, testSettings, hookData);
     }
 }
+*/

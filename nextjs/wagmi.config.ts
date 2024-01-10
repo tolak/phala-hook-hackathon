@@ -14,7 +14,7 @@ export default defineConfig({
         // --------------------------------------------------
         // 👉 Update the address with your deployed hook 👈
         // --------------------------------------------------
-        Counter: {
+        OrderBook: {
           31337: "0x330ae74DAA74d90FAc17045EbBa5bA7d233f69D9",
           5: "0x0000000000000000000000000000000000000000", // goerli
           420: "0x0000000000000000000000000000000000000000", // optimism goerli

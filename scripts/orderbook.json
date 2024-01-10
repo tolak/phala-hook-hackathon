@@ -1,0 +1,16 @@
+{
+    "buying": [
+        {
+            "buyer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "quantity": 1000,
+            "price": 10
+        }
+    ],
+    "selling": [
+        {
+            "seller": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "quantity": 200,
+            "price": 0.1
+        }
+    ]
+}
